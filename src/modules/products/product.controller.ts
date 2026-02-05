@@ -270,7 +270,6 @@ const updateProduct = async (req: Request, res: Response) => {
 
 const updateProductStatus = async (req: Request, res: Response) => {
   try {
-    console.log('Updating product status with params:', req.params, 'and body:', req.body);
     const productId = req.params.id;
     const { status } = req.body;
 

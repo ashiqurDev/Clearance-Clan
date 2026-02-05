@@ -263,6 +263,25 @@ const updateProduct = async ({
   return product;
 };
 
+const updateProductStatus = async ({
+  productId,
+  payload
+}: {
+  productId: string;
+  payload: {
+    status: string;
+  };
+}) => {
+  const product = await Product.findByIdAndUpdate(
+    productId,
+    { approvalStatus: payload.status },
+    { new: true }
+  );
+
+  return product;
+};
+
+
 // 🔹 Toggle product active status (seller only, ownership enforced)
 const toggleProductActive = async (
   productId: string,
@@ -302,6 +321,7 @@ export const ProductService = {
   getActiveProducts,
   getActiveProductsByShop,
   updateProduct,
+  updateProductStatus,
   toggleProductActive,
   deleteProduct
 };

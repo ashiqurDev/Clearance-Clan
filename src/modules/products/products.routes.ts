@@ -43,6 +43,13 @@ router.patch(
   ProductController.updateProduct
 );
 
+router.patch(
+  '/update-status/:id',
+  authMiddleware,
+  roleMiddleware('ADMIN'),
+  ProductController.updateProductStatus
+)
+
 // Get products list(public)
 router.get(
   '/',

@@ -268,6 +268,43 @@ const updateProduct = async (req: Request, res: Response) => {
   }
 };
 
+const updateProductStatus = async (req: Request, res: Response) => {
+  try {
+    console.log('Updating product status with params:', req.params, 'and body:', req.body);
+    const productId = req.params.id;
+    const { status } = req.body;
+
+    if (!['APPROVED', 'REJECTED', 'PENDING'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status value'
+      });
+    }
+
+    const updated = await ProductService.updateProductStatus({
+      productId,
+      payload: {
+        status
+      }
+    });
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: updated
+    });
+
+  } catch (error: any) {
+    throw new AppError(500, error.message || 'Server error');
+  }
+};
+
 // 🔹 Get product by ID (public or seller)
 const getProductById = async (req: Request, res: Response) => {
   try {
@@ -401,6 +438,7 @@ export const ProductController = {
   createProduct: asyncHandler(createProduct),
   getMyProducts: asyncHandler(getMyProducts),
   updateProduct: asyncHandler(updateProduct),
+  updateProductStatus: asyncHandler(updateProductStatus),
   getProductById: asyncHandler(getProductById),
   toggleProductActive: asyncHandler(toggleProductActive),
   getActiveProducts: asyncHandler(getActiveProducts),

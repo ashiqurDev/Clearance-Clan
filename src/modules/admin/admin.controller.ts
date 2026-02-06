@@ -255,6 +255,15 @@ const getStats = async (req: Request, res: Response) => {
   });
 };
 
+const getAllOrders = async (req: Request, res: Response) => {
+  const orders = await AdminService.getAllOrders(req.query);
+
+  res.json({
+    success: true,
+    data: orders,
+  });
+};
+
 export const AdminController = {
   getAllPendingShops: asyncHandler(getAllPendingShops),
   getAllApprovedShops: asyncHandler(getAllApprovedShops),
@@ -277,4 +286,5 @@ export const AdminController = {
   updateCategory: asyncHandler(updateCategory),
   updateProductApproval: asyncHandler(updateProductApproval),
   getStats: asyncHandler(getStats),
+  getAllOrders: asyncHandler(getAllOrders),
 };

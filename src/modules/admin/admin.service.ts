@@ -449,6 +449,74 @@ const getStats = async (query: any) => {
   };
 };
 
+const getAllOrders = async (query: any) => {
+  const filter: any = {};
+
+  if (query.status) {
+    filter.status = query.status;
+  }
+
+  // monthName filter (0=Jan, 1=Feb, ..., 11=Dec)
+  // "createdAt": "2026-01-21T20:10:50.468Z" --> month=0 (January)
+  if (query.monthly) {
+    const month = Number(query.monthly);
+    if (!isNaN(month) && month >= 0 && month <= 11) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const start = new Date(year, month, 1);
+      const end = new Date(year, month + 1, 1);
+      filter.createdAt = { $gte: start, $lt: end };
+    }
+  }
+
+  // pagination
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const total = await Order.countDocuments(filter);
+  const totalPages = total === 0 ? 1 : Math.ceil(total / limit);
+  const pageToUse = Math.max(1, Math.min(page, totalPages));
+  const skip = (pageToUse - 1) * limit;
+
+  const orders = await Order.find(filter)
+    .sort({ createdAt: -1 })
+    .populate('user', 'fullName email')   
+    .populate({ path: 'items.product', populate: { path: 'shop', select: 'shopName' } })
+    .select('_id status total user items createdAt')
+    .skip(skip)
+    .limit(limit);
+    
+  const data = orders.map(order => {
+    const o: any = order;
+    const firstItemProduct: any = o.items && o.items.length ? o.items[0].product : null;
+    const shop = firstItemProduct && firstItemProduct.shop ? firstItemProduct.shop : null;
+
+    return {
+      orderId: o._id,
+      status: o.status,
+      totalPrice: o.total,
+      buyer: {
+        id: o.user?._id,
+        name: o.user?.fullName,
+        email: o.user?.email,
+        image : o.user?.imgUrl
+      },
+      shop: {
+        name: shop?.shopName || null,
+      },
+      createdAt: o.createdAt
+    };
+  });
+
+  return {
+    meta: {
+      total,
+      page: pageToUse,
+      limit,
+      totalPages,
+    },
+    data
+  };
+};
 
 export const AdminService = {
     getAllPendingShops,
@@ -471,7 +539,8 @@ export const AdminService = {
     getProducts,
     getCategories,
     updateCategory,
-    updateProductApproval
+    updateProductApproval,
+    getAllOrders
 };
 
 

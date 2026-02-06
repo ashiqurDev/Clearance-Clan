@@ -170,4 +170,11 @@ router.get(
   AdminController.getStats
 );
 
+router.get(
+  '/orders',
+  authMiddleware,
+  roleMiddleware('ADMIN'),
+  AdminController.getAllOrders 
+)
+
 export const adminRoutes = router;

@@ -22,20 +22,36 @@ const getAllApprovedShops = async () => {
 const getAllShops = async ({
   page,
   limit,
+  search,
+  status,
 }: {
   page: number;
   limit: number;
+  search?: string;
+  status?: string;
 }) => {
   const skip = (page - 1) * limit;
 
+  const filter: any = {};
+  if (search && String(search).trim().length) {
+    const safe = String(search).trim();
+    const searchRegex = new RegExp(safe, 'i');
+    filter.shopName = searchRegex;
+  }
+  // optional status filter (accepts 'ALL' to mean no filter) Status = [PENDING, APPROVED, REJECTED, SUSPENDED]
+  if (status && String(status).toUpperCase() !== 'ALL') {
+    filter.status = String(status).toUpperCase();
+  }
+
+
   const [shops, total] = await Promise.all([
-    Shop.find()
+    Shop.find(filter)
       .populate('userId', 'fullName email')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
 
-    Shop.countDocuments(),
+    Shop.countDocuments(filter),
   ]);
 
   return {

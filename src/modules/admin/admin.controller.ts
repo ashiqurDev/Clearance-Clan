@@ -264,6 +264,22 @@ const getAllOrders = async (req: Request, res: Response) => {
   });
 };
 
+const getOrderById = async (req: Request, res: Response) => {
+  const order = await AdminService.getOrderById(req.params.orderId);
+
+  if (!order) {
+    return res.status(404).json({
+      success: false,
+      message: 'Order not found'
+    });
+  }
+
+  res.json({
+    success: true,
+    data: order
+  });
+};
+
 export const AdminController = {
   getAllPendingShops: asyncHandler(getAllPendingShops),
   getAllApprovedShops: asyncHandler(getAllApprovedShops),
@@ -287,4 +303,5 @@ export const AdminController = {
   updateProductApproval: asyncHandler(updateProductApproval),
   getStats: asyncHandler(getStats),
   getAllOrders: asyncHandler(getAllOrders),
+  getOrderById: asyncHandler(getOrderById),
 };

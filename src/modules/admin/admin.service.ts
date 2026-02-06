@@ -518,6 +518,45 @@ const getAllOrders = async (query: any) => {
   };
 };
 
+const getOrderById = async (orderId: string) => {
+  const order = await Order.findById(orderId)
+    .populate('user', 'fullName email')
+    .populate({ path: 'items.product', populate: { path: 'shop', select: 'shopName' } })
+    .select('_id status total user items createdAt');
+    
+  if (!order) {
+    throw new AppError(404, 'Order not found');
+  }
+  const o: any = order;
+  const firstItemProduct: any = o.items && o.items.length ? o.items[0].product : null;
+  const shop = firstItemProduct && firstItemProduct.shop ? firstItemProduct.shop : null;
+  
+  return {
+    orderId: o._id,
+    status: o.status,
+    totalPrice: o.total,
+    buyer: {
+      id: o.user?._id,
+      name: o.user?.fullName,
+      email: o.user?.email,
+      image : o.user?.imgUrl
+    },
+    shop: {
+      name: shop?.shopName || null,
+    },
+    items: o.items.map((item: any) => ({
+      productId: item.product?._id,
+      productName: item.product?.name,
+      shopName: item.product?.shop?.shopName || null,
+      variantSku: item.variantSku || null,
+      quantity: item.quantity,
+      price: item.price,
+      totalPrice: item.price * item.quantity
+    })),
+    createdAt: o.createdAt
+  };
+};
+
 export const AdminService = {
     getAllPendingShops,
     getAllApprovedShops,
@@ -540,7 +579,8 @@ export const AdminService = {
     getCategories,
     updateCategory,
     updateProductApproval,
-    getAllOrders
+    getAllOrders,
+    getOrderById,
 };
 
 

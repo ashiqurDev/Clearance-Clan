@@ -177,4 +177,11 @@ router.get(
   AdminController.getAllOrders 
 )
 
+router.get(
+  '/orders/:orderId',
+  authMiddleware,
+  roleMiddleware('ADMIN'),
+  AdminController.getOrderById
+)
+
 export const adminRoutes = router;

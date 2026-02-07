@@ -38,6 +38,14 @@ router.get(
   AdminController.getShopById
 );
 
+// get totale sales , total prpducts, retrun % 
+router.get(
+  '/shops/:shopId/stats',
+  authMiddleware,
+  roleMiddleware('ADMIN'),
+  AdminController.getShopStats
+);
+
 // Approve Shop
 router.patch(
   '/shops/:shopId/approve',

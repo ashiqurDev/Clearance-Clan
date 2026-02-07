@@ -69,6 +69,51 @@ const getShopById = async (shopId: string) => {
   return Shop.findById(shopId).populate('userId', 'fullName email');
 };
 
+const getShopStats = async (shopId: string) => {
+  const shop = await Shop.findById(shopId);
+  if (!shop) {
+    throw new AppError(404, 'Shop not found');
+  }
+  
+  // total sales and units for this shop (only from delivered orders)
+  const salesPipeline = [
+    { $match: { status: 'DELIVERED', 'items.product.shop': shopId } },
+    { $unwind: '$items' },
+    {
+      $group: {
+        _id: null,
+        totalSales: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+        totalUnits: { $sum: '$items.quantity' }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        totalSales: 1,
+        totalUnits: 1
+      }
+    }
+  ];
+
+  const salesRes = await Order.aggregate(salesPipeline as any);
+  const sales = salesRes[0] || { totalSales: 0, totalUnits: 0 };
+  // total products for this shop
+  const totalProducts = await Product.countDocuments({ shop: shopId });
+
+  // precentage of retrun (cancelled orders / total orders)
+  const totalOrders = await Order.countDocuments({ 'items.product.shop': shopId });
+  const cancelledOrders = await Order.countDocuments({ status: 'CANCELLED', 'items.product.shop': shopId });
+  const returnPercentage = totalOrders > 0 ? (cancelledOrders / totalOrders) * 100 : 0;
+
+  return {
+    totalSales: sales.totalSales || 0,
+    totalUnits: sales.totalUnits || 0,
+    totalProducts,
+    returnPercentage: parseFloat(returnPercentage.toFixed(2))
+  };
+};
+  
+
 const approveShop = async (shopId: string) => {
   const shop = await Shop.findByIdAndUpdate(
     shopId,
@@ -551,6 +596,7 @@ const getOrderById = async (orderId: string) => {
       variantSku: item.variantSku || null,
       quantity: item.quantity,
       price: item.price,
+      imageUrl: item.product.media,
       totalPrice: item.price * item.quantity
     })),
     createdAt: o.createdAt
@@ -562,6 +608,7 @@ export const AdminService = {
     getAllApprovedShops,
     getAllShops,
     getShopById,
+    getShopStats,
     approveShop,
     rejectShop,
     suspendShop,

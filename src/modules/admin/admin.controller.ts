@@ -63,6 +63,16 @@ const getShopById = async (req: Request, res: Response) => {
   });
 };
 
+const getShopStats = async (req: Request, res: Response) => {
+  const shopId = req.params.shopId;
+  const stats = await AdminService.getShopStats(shopId);
+
+  res.json({
+    success: true,
+    data: stats
+  });
+};
+
 const approveShop = async (req: Request, res: Response) => {
   const shop = await AdminService.approveShop(req.params.shopId);
 
@@ -285,6 +295,7 @@ export const AdminController = {
   getAllApprovedShops: asyncHandler(getAllApprovedShops),
   getAllShops: asyncHandler(getAllShops),
   getShopById: asyncHandler(getShopById),
+  getShopStats: asyncHandler(getShopStats),
   approveShop: asyncHandler(approveShop),
   rejectShop: asyncHandler(rejectShop),
   suspendShop: asyncHandler(suspendShop),

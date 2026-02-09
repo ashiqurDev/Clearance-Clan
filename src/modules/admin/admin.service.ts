@@ -564,7 +564,7 @@ const getAllOrders = async (query: any) => {
 };
 
 const getOrderById = async (orderId: string) => {
-  const order = await Order.findById('696f1dce1b479b4dd46f0a39')
+  const order = await Order.findById(orderId)
     .populate('user', 'fullName email')
     .populate({ path: 'items.product', populate: { path: 'shop', select: 'shopName' } })
     .select('_id status total user items createdAt shippingAddress shippingFee');

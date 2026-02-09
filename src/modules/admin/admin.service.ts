@@ -564,10 +564,10 @@ const getAllOrders = async (query: any) => {
 };
 
 const getOrderById = async (orderId: string) => {
-  const order = await Order.findById(orderId)
+  const order = await Order.findById('696f1dce1b479b4dd46f0a39')
     .populate('user', 'fullName email')
     .populate({ path: 'items.product', populate: { path: 'shop', select: 'shopName' } })
-    .select('_id status total user items createdAt');
+    .select('_id status total user items createdAt shippingAddress shippingFee');
     
   if (!order) {
     throw new AppError(404, 'Order not found');
@@ -597,7 +597,9 @@ const getOrderById = async (orderId: string) => {
       quantity: item.quantity,
       price: item.price,
       imageUrl: item.product.media,
-      totalPrice: item.price * item.quantity
+      totalPrice: item.price * item.quantity,
+      shippingAddress: o.shippingAddress,
+      shippingFee: o.shippingFee,
     })),
     createdAt: o.createdAt
   };

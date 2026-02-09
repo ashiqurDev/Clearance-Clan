@@ -597,10 +597,10 @@ const getOrderById = async (orderId: string) => {
       quantity: item.quantity,
       price: item.price,
       imageUrl: item.product.media,
-      totalPrice: item.price * item.quantity,
-      shippingAddress: o.shippingAddress,
-      shippingFee: o.shippingFee,
+      totalPrice: item.price * item.quantity
     })),
+    shippingAddress: o.shippingAddress,
+    shippingFee: o.shippingFee,
     createdAt: o.createdAt
   };
 };

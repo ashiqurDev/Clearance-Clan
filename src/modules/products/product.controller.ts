@@ -200,6 +200,7 @@ const updateProduct = async (req: Request, res: Response) => {
     const category = req.body.category;
     const variants = parseIfString(req.body.variants);
     const shipping = parseIfString(req.body.shipping);
+    const inventory = parseIfString(req.body.inventory);
 
     // 🔹 Validate category (if provided)
     if (category) {
@@ -214,6 +215,17 @@ const updateProduct = async (req: Request, res: Response) => {
 
     // 🔹 Validate variants (if provided)
     if (variants) {
+      if (Array.isArray(variants)) {
+        variants.forEach((v: any) => {
+          // Fix [Object: null prototype] for attributes
+          if (v.attributes && typeof v.attributes === 'object') {
+            v.attributes = { ...v.attributes };
+          }
+          if (v.stock !== undefined) v.stock = Number(v.stock);
+          if (v.price !== undefined) v.price = Number(v.price);
+        });
+      }
+
       for (const v of variants) {
         if (!v.price || !v.stock) {
           return res.status(400).json({
@@ -267,6 +279,7 @@ const updateProduct = async (req: Request, res: Response) => {
         description,
         category,
         variants,
+        inventory,
         shipping,
         status,
         ...(Object.keys(media).length ? { media } : {})

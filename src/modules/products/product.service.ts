@@ -16,7 +16,7 @@ const createProduct = async (payload: Partial<IProduct>) => {
     throw new AppError(400, 'Product name is required');
   }
 
-  // i want to if payload.inventory.stock exist, set direct stock. otherwise payload variants exist so calculate paylaod variants stock
+  // if payload.inventory.stock exist, set direct stock. otherwise payload variants exist so calculate paylaod variants stock
 if (!payload.variants && payload.inventory && payload.inventory?.stock > 0) {
   payload.inventory = {
     stock: payload.inventory.stock,
@@ -257,13 +257,26 @@ const updateProduct = async ({
   const product = await Product.findOne({ _id: productId, shop: shopId });
   if (!product) return null;
 
+    // if payload.inventory.stock exist, set direct stock. otherwise payload variants exist so calculate paylaod variants stock
+if (!payload.variants && payload.inventory && payload.inventory?.stock > 0) {
+  payload.inventory = {
+    stock: payload.inventory.stock,
+    lowStockAlert: payload.inventory.lowStockAlert || 10,
+  };
+} else if (payload.variants && payload.variants?.length > 0) {
+  payload.inventory = {
+    stock: calculateTotalStock(payload.variants),
+    lowStockAlert: payload.inventory?.lowStockAlert || 10,
+  };
+}
+
   // 🔹 Sync inventory stock if variants updated
-  if (payload.variants) {
-    payload.inventory = {
-      stock: calculateTotalStock(payload.variants),
-      lowStockAlert: product.inventory.lowStockAlert || 10
-    };
-  }
+  // if (payload.variants) {
+  //   payload.inventory = {
+  //     stock: calculateTotalStock(payload.variants),
+  //     lowStockAlert: product.inventory.lowStockAlert || 10
+  //   };
+  // }
 
   Object.assign(product, payload);
   await product.save();

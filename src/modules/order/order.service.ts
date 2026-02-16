@@ -124,8 +124,16 @@ const getOrdersForSeller = async (sellerUserId: string) => {
   const productIds = products.map(p => p._id);
 
   // find orders that contain any of these products
-  return Order.find({ 'items.product': { $in: productIds } }).sort({ createdAt: -1 });
-};
+  return Order.find({ 'items.product': { $in: productIds } }).populate({
+    path: 'user',
+    select: 'fullName email'
+  })
+  .populate({
+    path: 'items.product',
+    select: 'name description pricing variants media',
+})
+  .sort({ createdAt: -1 });
+}
 
 const getAllOrders = async () => {
   return Order.find().sort({ createdAt: -1 });

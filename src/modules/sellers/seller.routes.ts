@@ -58,7 +58,7 @@ router.get(
 );
 
 // Update shop (requires approval)
-router.put(
+router.patch(
   '/update-shop',
   authMiddleware,
   roleMiddleware('SELLER'),

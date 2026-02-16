@@ -61,7 +61,8 @@ const getMyOrders = async (req: Request, res: Response) => {
 
 const getOrdersForSeller = async (req: Request, res: Response) => {
   const sellerId = req.user?._id;
-  const orders = await OrderService.getOrdersForSeller(String(sellerId));
+  const status = req.query.status as string | undefined;
+  const orders = await OrderService.getOrdersForSeller(String(sellerId), status);
   return res.status(200).json({ success: true, data: orders });
 };
 

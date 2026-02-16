@@ -114,7 +114,7 @@ const getOrdersForUser = async (userId: string) => {
     .populate({ path: 'items.product', select: 'name pricing variants media shop' });
 };
 
-const getOrdersForSeller = async (sellerUserId: string) => {
+const getOrdersForSeller = async (sellerUserId: string, status?: string) => {
   // find shop for seller
   const shop = await (await import('../sellers/seller.model')).Shop.findOne({ userId: sellerUserId });
   if (!shop) throw new AppError(404, 'Seller shop not found');
@@ -123,8 +123,14 @@ const getOrdersForSeller = async (sellerUserId: string) => {
   const products = await (await import('../products/product.model')).Product.find({ shop: shop._id }).select('_id');
   const productIds = products.map(p => p._id);
 
+  const filter: any = { 'items.product': { $in: productIds } };
+
+  if (status && status !== 'ALL') {
+    filter.status = status;
+  }
+
   // find orders that contain any of these products
-  return Order.find({ 'items.product': { $in: productIds } }).populate({
+  return Order.find(filter).populate({
     path: 'user',
     select: 'fullName email'
   })

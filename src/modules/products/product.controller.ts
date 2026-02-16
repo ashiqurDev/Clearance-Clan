@@ -44,14 +44,35 @@ const createProduct = async (req: Request, res: Response) => {
       ? JSON.parse((rawBody as any).data)
       : rawBody;
 
-    const {
+    let {
       name,
       description,
       category,
       variants,
       pricing,
       shipping,
+      inventory
     } = body;
+
+
+    if (typeof variants === 'string') {
+      try {
+        variants = JSON.parse(variants);
+      } catch (e) {}
+    }
+
+    // 🔹 Sanitize variants
+    if (variants && Array.isArray(variants)) {
+      variants.forEach((v: any) => {
+        // Fix [Object: null prototype] for attributes
+        if (v.attributes && typeof v.attributes === 'object') {
+          v.attributes = { ...v.attributes };
+        }
+        
+        v.stock = Number(v.stock) || 0;
+        if (v.price !== undefined && v.price !== null) v.price = Number(v.price);
+      });
+    }
 
     if (!name) {
       return res.status(400).json({ success: false, message: 'Product name is required' });
@@ -110,6 +131,7 @@ const createProduct = async (req: Request, res: Response) => {
       category,
       variants,
       pricing,
+      inventory,
       shipping,
       media: {
         coverImage: coverImageUrl,

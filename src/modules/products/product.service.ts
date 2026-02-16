@@ -6,21 +6,28 @@ import { createStripeProduct } from '../payments/connect.service';
 
 // Helper to calculate total stock from variants
 const calculateTotalStock = (variants: IVariant[]) => {
-  return variants.reduce((sum, v) => sum + v.stock, 0);
+  return variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
 };
 
 // 🔹 Create product
 const createProduct = async (payload: Partial<IProduct>) => {
+
   if (!payload.name) {
     throw new AppError(400, 'Product name is required');
   }
-  // 🔹 Calculate inventory from variants
-  if (payload.variants && payload.variants.length > 0) {
-    payload.inventory = {
-      stock: calculateTotalStock(payload.variants),
-      lowStockAlert: payload.inventory?.lowStockAlert || 10
-    };
-  }
+
+  // i want to if payload.inventory.stock exist, set direct stock. otherwise payload variants exist so calculate paylaod variants stock
+if (!payload.variants && payload.inventory && payload.inventory?.stock > 0) {
+  payload.inventory = {
+    stock: payload.inventory.stock,
+    lowStockAlert: payload.inventory.lowStockAlert || 10,
+  };
+} else if (payload.variants && payload.variants?.length > 0) {
+  payload.inventory = {
+    stock: calculateTotalStock(payload.variants),
+    lowStockAlert: payload.inventory?.lowStockAlert || 10,
+  };
+}
 
   // 🔹 Get shop + seller Stripe account
   const shop = await Shop.findById(payload.shop).populate('userId');
@@ -34,6 +41,7 @@ const createProduct = async (payload: Partial<IProduct>) => {
   if (payload.variants && payload.variants.length > 0) {
     const variantsWithStripe = [] as any[];
     for (const v of payload.variants) {
+      console.log(JSON.stringify(v))
       if (v.price == null) throw new AppError(400, 'Each variant must have a price');
       const suffix = (v.attributes && (v.attributes as any).edition) || Object.values(v.attributes || {}).join(' ');
       const name = suffix ? `${payload.name} - ${suffix}` : payload.name;

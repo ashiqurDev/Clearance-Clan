@@ -42,7 +42,7 @@ export const getAccountStatus = async (accountId: string) => {
 
 export const createStripeProduct = async (payload: { name?: string; description?: string; price?: any; currency?: string; connectedAccountId?: string }) => {
   const { name, description, price, currency = 'usd', connectedAccountId } = payload || {};
-  if (!name || !price || !connectedAccountId) throw new Error('Missing required fields: name, price, connectedAccountId');
+  if (!name || price === null || !connectedAccountId) throw new Error('Missing required fields: name, price, connectedAccountId');
   const product = await stripe.products.create({
     name,
     description,

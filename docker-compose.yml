@@ -1,12 +1,21 @@
 services:
   app:
     build: .
-    ports:
-      - "3002:3002"
     env_file:
       - .env
     depends_on:
       - mongo
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs
+    depends_on:
+      - app
+
 
   mongo:
     image: mongo:latest

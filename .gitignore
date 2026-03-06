@@ -1,5 +1,6 @@
 # env files
 .env*
+NGINX_SETUP.md
 
 # node modules
 /node_modules

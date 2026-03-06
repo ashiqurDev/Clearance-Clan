@@ -20,6 +20,13 @@ app.use(express.json());
 // Parse urlencoded bodies (but not multipart/form-data)
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Welcome to the API',
+  });
+});
+
 app.use('/api/v1', router);
 
 // global error handler (should be last middleware)

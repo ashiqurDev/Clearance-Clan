@@ -45,4 +45,6 @@ router.patch('/:orderId/status', authMiddleware, roleMiddleware('SELLER'), Order
 // Delete an order (only ADMIN)
 router.delete('/:orderId', authMiddleware, roleMiddleware('ADMIN'), OrderController.deleteOrder);
 
+router.put('/orderId/status-update', authMiddleware, roleMiddleware('ADMIN'), OrderController.updateOrderStatus);
+
 export default router;
